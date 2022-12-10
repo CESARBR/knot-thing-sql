@@ -1,0 +1,5 @@
+# The order of columns must be: value and timestamp.
+# The application expects the records to be sorted from oldest to newest.
+# Make sure the query sorts the records by timestamp in ascending order.
+mapping:
+  1: ""

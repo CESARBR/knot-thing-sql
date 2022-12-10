@@ -1,0 +1,9 @@
+intervalBetweenRequestInSeconds: 
+datesPersistenceFilepath: 
+#Maximum period to retrieve historical data after an application restart.
+dataRecoveryPeriodInHours: 
+#Format: integer ID: tagName
+pertinentTags:
+logFilepath: ""
+numberParallelTags: 
+context: 

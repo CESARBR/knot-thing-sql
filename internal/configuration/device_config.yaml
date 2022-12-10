@@ -1,0 +1,19 @@
+0d7cd9d221385e1f:
+  id: 0d7cd9d221385e1f
+  token: ""
+  name: 
+  config:
+  - sensorId: 
+    schema:
+      valueType: 
+      unit: 
+      typeId: 
+      name: 
+    event:
+      change: 
+      timeSec: 
+      lowerThreshold: 
+      upperThreshold: 
+  state: new
+  data: []
+  error: ""
