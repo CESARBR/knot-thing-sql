@@ -26,7 +26,7 @@ func TestCompareDatetime(t *testing.T) {
 	datetimeStringWithTimeZone := formatTimestampToUTCWithZone(datetimeString)
 	convertedDatetime, err := convertStringToDatetime(datetimeStringWithTimeZone)
 	assert.Nil(t, err)
-	isTimeLagged := isTimeLagged(convertedDatetime, 5)
+	isTimeLagged := isTimeLagged(convertedDatetime, 5, 30)
 	const expectedTimeLagged = true
 	assert.Equal(t, expectedTimeLagged, isTimeLagged)
 }
@@ -36,11 +36,12 @@ func TestUpdateDatetimeWhenLaggedTime(t *testing.T) {
 	datetimeStringWithTimeZone := formatTimestampToUTCWithZone(datetimeString)
 	convertedDatetime, err := convertStringToDatetime(datetimeStringWithTimeZone)
 	assert.Nil(t, err)
-	isTimeLagged := isTimeLagged(convertedDatetime, 5)
+	isTimeLagged := isTimeLagged(convertedDatetime, 5, 30)
 
 	if isTimeLagged {
 		const laggedHours = 5
-		laggedTime := lagTime(convertedDatetime, laggedHours)
+		const laggedMinSec = 30
+		laggedTime := lagTime(convertedDatetime, laggedHours, laggedMinSec)
 		convertedDatetimeString := convertDatetimeToString(laggedTime, "glassCosmosDB")
 		expectedDatetimeString := "2022-06-15 15`:`30`:`00"
 		assert.Equal(t, expectedDatetimeString, convertedDatetimeString)
@@ -51,10 +52,11 @@ func TestUpdateDatetimeWhenLaggedTime(t *testing.T) {
 func TestIsLaggedTime(t *testing.T) {
 	timestamp := "2022-07-15 19`:`40`:`00"
 	laggedHours := 1
+	laggedMinSec := 30
 	var datetimeStringWithTimeZone string = formatTimestampToUTCWithZone(timestamp)
 	convertedDatetime, err := convertStringToDatetime(datetimeStringWithTimeZone)
 	if err == nil {
-		islagged := isTimeLagged(convertedDatetime, laggedHours)
+		islagged := isTimeLagged(convertedDatetime, laggedHours, laggedMinSec)
 		assert.Equal(t, islagged, false)
 	}
 }
