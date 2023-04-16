@@ -76,7 +76,14 @@ func convertStringValueToNumeric(value string) (interface{}, error) {
 	if floatValue, err := strconv.ParseFloat(value, 64); err == nil {
 		return floatValue, err
 	}
-	return 0, fmt.Errorf("type conversion error")
+	if isEmptyString(value) {
+		return 0, fmt.Errorf("type conversion error")
+	}
+	return value, nil
+}
+
+func isEmptyString(value string) bool {
+	return value == ""
 }
 
 func isMeasurementNew(tagNameTimestampMapping map[int]string, row entities.Row, sensorID int) bool {
