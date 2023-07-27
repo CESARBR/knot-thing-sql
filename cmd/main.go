@@ -1,44 +1,47 @@
 package main
 
 import (
-	"net/http"
-	_ "net/http/pprof"
-	"os"
-	"path/filepath"
-
 	"github.com/CESARBR/knot-thing-sql/internal/entities"
 	"github.com/CESARBR/knot-thing-sql/internal/gateways/knot"
 	"github.com/CESARBR/knot-thing-sql/internal/utils"
 	"github.com/CESARBR/knot-thing-sql/pkg/application"
-	"github.com/CESARBR/knot-thing-sql/pkg/infraestructure/repositories/database"
 	"github.com/CESARBR/knot-thing-sql/pkg/logging"
+	_ "github.com/sirupsen/logrus"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+	"path/filepath"
 )
 
 func main() {
 	startPprof()
-	applicationConfiguration, deviceConfiguration, knotConfiguration, databaseConfiguration := loadConfiguration()
+	//applicationConfiguration, deviceConfiguration, knotConfiguration, databaseConfiguration := loadConfiguration()
+	applicationConfiguration, deviceConfiguration, knotConfiguration := loadConfiguration()
 
 	log := setupLogger(applicationConfiguration.LogFilepath)
 	logger := log.Get("Main")
 
 	transmissionChannel := make(chan entities.CapturedData, len(applicationConfiguration.PertinentTags))
-	builderProperties := application.BuilderProperties{
-		ApplicationConfiguration: applicationConfiguration,
-		Logger:                   log,
-		TransmissionChannel:      transmissionChannel,
-	}
-	connection := database.NewSQLConnection(databaseConfiguration, applicationConfiguration)
-	connection.Create()
-	defer connection.Destroy()
-	buildersMapping := application.NewBuilderMapping()
-	builder := application.NewBuilder(buildersMapping, builderProperties)
-	builder.SetConnection(connection)
-	builder.SetDatabaseConfiguration(databaseConfiguration)
-	director := application.NewDirector(builder)
-	dataHandler := director.BuildDataHandler()
+	//builderProperties := application.BuilderProperties{
+	//	ApplicationConfiguration: applicationConfiguration,
+	//	Logger:                   log,
+	//	TransmissionChannel:      transmissionChannel,
+	//}
+	//connection := database.NewSQLConnection(databaseConfiguration, applicationConfiguration)
+	//connection.Create()
+	//defer connection.Destroy()
+	//buildersMapping := application.NewBuilderMapping()
+	//builder := application.NewBuilder(buildersMapping, builderProperties)
+	//builder.SetConnection(connection)
+	//builder.SetDatabaseConfiguration(databaseConfiguration)
+	//director := application.NewDirector(builder)
+	//dataHandler := director.BuildDataHandler()
 
-	go dataHandler.Collect()
+	//go dataHandler.Collect()
 	logger.Println("Application started")
+
+	go application.DataProducer(transmissionChannel)
+	defer close(transmissionChannel)
 
 	pipeDevices := make(chan map[string]entities.Device)
 	knotIntegration, err := knot.NewKNoTIntegration(pipeDevices, knotConfiguration, logger, deviceConfiguration)
@@ -47,16 +50,18 @@ func main() {
 	waitUntilShutdown()
 }
 
-func loadConfiguration() (entities.Application, map[string]entities.Device, entities.IntegrationKNoTConfig, entities.Database) {
+// func loadConfiguration() (entities.Application, map[string]entities.Device, entities.IntegrationKNoTConfig, entities.Database) {
+func loadConfiguration() (entities.Application, map[string]entities.Device, entities.IntegrationKNoTConfig) {
 	applicationConfiguration, err := utils.ConfigurationParser("internal/configuration/application_configuration.yaml", entities.Application{})
 	application.VerifyError(err)
 	deviceConfiguration, err := utils.ConfigurationParser("internal/configuration/device_config.yaml", make(map[string]entities.Device))
 	application.VerifyError(err)
 	knotConfiguration, err := utils.ConfigurationParser("internal/configuration/knot_setup.yaml", entities.IntegrationKNoTConfig{})
 	application.VerifyError(err)
-	databaseConfiguration, err := utils.ConfigurationParser("internal/configuration/database_configuration.yaml", entities.Database{})
-	application.VerifyError(err)
-	return applicationConfiguration, deviceConfiguration, knotConfiguration, databaseConfiguration
+	//	databaseConfiguration, err := utils.ConfigurationParser("internal/configuration/database_configuration.yaml", entities.Database{})
+	//	application.VerifyError(err)
+	//	return applicationConfiguration, deviceConfiguration, knotConfiguration, databaseConfiguration
+	return applicationConfiguration, deviceConfiguration, knotConfiguration
 }
 
 func waitUntilShutdown() {
